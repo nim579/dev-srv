@@ -1,0 +1,43 @@
+{
+  "name": "dev-srv",
+  "version": "0.1.0",
+  "description": "Developer servers daemon",
+  "main": "index.js",
+  "scripts": {
+    "prepublish": "rm -rf lib/ && exec $(npm bin)/coffee -c -o lib/ src/",
+    "postinstall": "node tools/initer.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Nick Iv",
+  "license": "MIT",
+  "keywords": [
+    "server",
+    "development",
+    "daemon",
+    "microservice",
+    "ghost",
+    "process manager",
+    "tools",
+    "cli"
+  ],
+  "dependencies": {
+    "cli-table": "^0.3.1",
+    "commander": "^2.9.0",
+    "underscore": "^1.8.3",
+    "node-srv": "^1.2.6"
+  },
+  "optionalDependencies": {
+    "node-srv": "^1.2.6"
+  },
+  "devDependencies": {
+    "coffee-script": "^1.10.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nim579/dev-srv.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nim579/dev-srv/issues"
+  },
+  "homepage": "https://github.com/nim579/dev-srv#readme"
+}
