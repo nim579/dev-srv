@@ -8,6 +8,9 @@
     "postinstall": "node tools/initer.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "bin": {
+    "dev-srv": "./bin/dev-srv"
+  },
   "author": "Nick Iv",
   "license": "MIT",
   "keywords": [

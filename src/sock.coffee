@@ -13,11 +13,15 @@ class Server
         @_srv.on 'error', (error)=>
             process.send? success: false, error: error
 
+            console.log "Daemon socket not started"
+
         @_srv.on 'connection', (socket)=>
             @_onConnection socket
 
         @_srv.listen conf.DAEMON_PORT, ->
             process.send? success: true
+
+            console.log "Daemon socket started"
 
     _onConnection: (socket)->
         new Socket socket, @messageCallback

@@ -25,7 +25,9 @@ commands =
         out = fs.openSync conf.DAEMON_LOGS, 'a'
         err = fs.openSync conf.DAEMON_LOGS_ERROR, 'a'
 
-        daemon = cp.spawn initer, [script, port, host],
+        args = [script]
+
+        daemon = cp.spawn initer, [script, port or "", host or ""],
             detached: true
             cwd: process.cwd()
             stdio: ['ipc', out, err]
@@ -63,13 +65,16 @@ commands =
     proxy: (name, port, callback)->
         commands._request 'proxy', {name: name, port: port}, callback
 
-    # exec: (name, command, port, args, callback)->
-    # fork: (name, path, port, args, callback)->
+    exec: (name, command, cwd, port, args, callback)->
+        commands._request 'exec', {name: name, command: command, cwd: cwd, port: port, args: args}, callback
+
+    fork: (name, path, cwd, port, args, callback)->
+        commands._request 'fork', {name: name, path: path, cwd: cwd, port: port, args: args}, callback
 
     remove: (name, callback)->
         commands._request 'remove', {name: name}, callback
 
-    set:    (key, value, callback)->
+    set: (key, value, callback)->
 
     _request: (method, params, callback)->
         if _.isFunction params
@@ -79,6 +84,7 @@ commands =
         commands.connect (err, daemon)->
             return callback err if err
 
+            # console.log method, params
             daemon.request method, params
             .then (data)->
                 callback? null, data
