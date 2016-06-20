@@ -17,5 +17,7 @@ if(process.env.DEVSRV_HOME){
 
 conf.DAEMON_PORT = p.resolve(conf.ROOT_PATH, 'daemon.sock');
 conf.DAEMON_PID  = p.resolve(conf.ROOT_PATH, 'daemon.pid');
+conf.DAEMON_LOGS = p.resolve(conf.ROOT_PATH, 'daemon.log');
+conf.DAEMON_LOGS_ERROR = p.resolve(conf.ROOT_PATH, 'daemon-error.log');
 
 module.exports = conf;

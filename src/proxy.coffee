@@ -1,17 +1,18 @@
 http = require 'http'
+_ = require 'underscore'
 
 class Proxy
-    port: 80
-    host: 'local'
-
     _nodes: []
 
     constructor: ->
 
     startServer: ->
+
+
     stopServer: ->
 
     addNode: (name, port)->
+
 
     removeNode: (name)->
 
