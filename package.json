@@ -1,11 +1,11 @@
 {
   "name": "dev-srv",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "Developer servers daemon",
   "main": "index.js",
   "scripts": {
     "prepublish": "rm -rf lib/ && exec $(npm bin)/coffee -c -o lib/ src/",
-    "postinstall": "node tools/initer.js",
+    "build": "rm -rf lib/ && exec $(npm bin)/coffee -c -o lib/ src/",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "bin": {
@@ -42,5 +42,12 @@
   "bugs": {
     "url": "https://github.com/nim579/dev-srv/issues"
   },
-  "homepage": "https://github.com/nim579/dev-srv#readme"
+  "homepage": "https://github.com/nim579/dev-srv#readme",
+  "engines": {
+    "node": ">=4.0"
+  },
+  "directories": {
+    "bin": "./bin",
+    "lib": "./lib"
+  }
 }

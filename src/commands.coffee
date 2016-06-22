@@ -5,6 +5,7 @@ cp   = require 'child_process'
 conf = require '../tools/config.js'
 sock = require './sock'
 
+initer = require '../tools/initer.js'
 
 commands =
     connect: (callback)->

@@ -1,3 +1,3 @@
-var DevSrv = require('./lib/interface');
+var DevSrv = require('./lib/commands');
 
 module.exports = DevSrv;
