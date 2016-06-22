@@ -3,6 +3,7 @@
   "version": "0.1.2",
   "description": "Developer servers daemon",
   "main": "index.js",
+  "preferGlobal": true,
   "scripts": {
     "prepublish": "rm -rf lib/ && exec $(npm bin)/coffee -c -o lib/ src/",
     "build": "rm -rf lib/ && exec $(npm bin)/coffee -c -o lib/ src/",
