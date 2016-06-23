@@ -3,25 +3,24 @@ net  = require 'net'
 conf = require '../tools/config'
 
 class Server
-    constructor: (@messageCallback)->
-        @_start()
+    constructor: (@messageCallback, callback)->
+        @_start callback
         return @
 
-    _start: ->
+    _start: (callback)->
         @_srv = net.createServer()
 
         @_srv.on 'error', (error)=>
-            process.send? success: false, error: error
+            if error.code is 'EADDRINUSE'
+                return callback? 'socket_addr_in_use', error
 
-            console.log "Daemon socket not started"
+            callback? error
 
         @_srv.on 'connection', (socket)=>
             @_onConnection socket
 
         @_srv.listen conf.DAEMON_PORT, ->
-            process.send? success: true
-
-            console.log "Daemon socket started"
+            callback? null
 
     _onConnection: (socket)->
         new Socket socket, @messageCallback

@@ -6,16 +6,24 @@ _ = require 'underscore'
 class Proxy
     _nodes: {}
 
-    constructor: (port, host)->
+    constructor: (port, host, callback)->
         @host = host or 'lchost.ws'
         @port = port or 8080
 
-        console.log @port, @host
-
         @_proxy = http.createServer _.bind(@request, @)
-        @_proxy.listen @port
 
-        console.log 'Proxy started'
+        @_proxy.on 'error', (err)->
+            if err.code is 'EACCES'
+                callback? 'proxy_port_access_denied'
+
+            else if err.code is 'EADDRINUSE'
+                callback? 'proxy_port_already_in_use'
+
+            else
+                callback? 'proxy_unknown_error', err
+
+        @_proxy.listen @port, ->
+            callback? null
 
     stop: ->
         @_proxy.close()

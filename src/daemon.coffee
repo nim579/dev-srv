@@ -6,35 +6,115 @@ conf  = require '../tools/config.js'
 Proxy = require './proxy'
 sock  = require './sock'
 
+cluster = require 'cluster'
+
 class Daemon
     servers: []
     portFamily: 5000
 
     constructor: (port, host)->
-        @_commands = new sock.Server _.bind(@command, @)
-        @_proxy    = new Proxy port, host
+        # Experimental clusterization
+        # return @_clusterize() if cluster.isMaster
 
-        process.on 'SIGINT',             _.bind(@destroy, @)
-        process.on 'SIGTERM',            _.bind(@destroy, @)
-        process.on 'unhandledRejection', _.bind(@destroy, @)
-        process.on 'rejectionHandled',   _.bind(@destroy, @)
+        @_startProxy port, host, (err)=>
+            if err
+                process.send? success: false, error: err
+                console.log "Daemon proxy not started:", err
+                @destroy()
+                return
+
+            console.log "Daemon proxy started"
+            @_startCommands (err)=>
+                if err
+                    process.send? success: false, error: err
+                    console.log "Daemon socket not started:", err
+                    @destroy()
+                    return
+
+                console.log "Daemon socket started"
+
+                @_bindEvents()
+
+                process.send? success: true
+                console.log 'Daemon ready'
+
+    _clusterize: ->
+        cluster.settings.silent = true
+        worker = cluster.fork()
+
+        @_bindEvents @destroyCluster
+
+        cluster.on 'message', (data)->
+            if data.success
+                cluster.on 'error', (worker, code, signal)->
+                    console.log 'Daemon died', code, signal
+                    cluster.fork()
+
+            worker.process.stdout.on 'data', (data)->
+                process.stdout.write data.toString()
+
+            worker.process.stderr.on 'data', (data)->
+                process.stderr.write data.toString()
+
+            process.send? data
+            console.log "Daemon clusterized."
+
+    _startProxy: (port, host, callback)->
+        @_proxy = new Proxy port, host, (err, data)->
+            if err
+                if err is 'proxy_port_access_denied'
+                    console.log 'Proxy port access denied. Try to start with sudo.'
+                    callback? 'proxy_port_access_denied'
+
+                else if err is 'proxy_port_already_in_use'
+                    console.log 'Proxy port already in use. Choose another port or release current.'
+                    callback? 'proxy_port_already_in_use'
+
+                else
+                    console.log 'Proxy start unknown error', data
+                    callback? data
+
+                return
+
+            return callback? null
+
+    _startCommands: (callback)->
+        @_commands = new sock.Server _.bind(@command, @), (err, data)->
+            if err
+                console.log 'Socket server not started:', data
+                return callback? err
+
+            return callback? null
+
+    _bindEvents: (destroy=@destroy)->
+        process.on 'SIGINT',             _.bind(destroy, @)
+        process.on 'SIGTERM',            _.bind(destroy, @)
+        process.on 'unhandledRejection', _.bind(destroy, @)
+        process.on 'rejectionHandled',   _.bind(destroy, @)
 
         process.on 'uncaughtException', (err)->
-            console.log "Uncaught Exception"
-            console.log err
-
-        console.log 'Daemon ready'
+            console.error "Uncaught Exception"
+            console.error err
 
     destroy: (callback)->
         for server in @servers
             @remove server
 
-        @_proxy.stop()
+        @_proxy?.stop()
         @stop callback
+
+    destroyCluster: (callback)->
+        if cluster.isMaster
+            for worker in cluster.workers
+                worker.kill 1
+
+        callback?()
 
     stop: (callback)->
         console.log 'Daemon stoped'
         callback?()
+
+        process.exit() unless @_commands
 
         @_commands.destroy ->
             setTimeout ->

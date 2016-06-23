@@ -44,13 +44,19 @@ program
 program
 .command 'start'
 .description 'Starts daemon server'
-.option '-p, --port [port]', 'Set server port'
-.option '-h, --host [hostname]', 'Set server domain name'
+.option '-p, --port [port]', 'Set daemon server port'
+.option '-h, --host [hostname]', 'Set daemon server domain name'
 .action (options)->
     commands.start options.port, options.host, (err, daemon)->
         if err
-            if err.code is "EADDRINUSE"
+            if err is "socket_addr_in_use"
                 console.log "Daemon server already started. Stop server or remove .devsrv/daemon.sock file and try again"
+
+            else if err is 'proxy_port_access_denied'
+                console.log "Proxy port access denied. Try to start with sudo."
+
+            else if err is 'proxy_port_already_in_use'
+                console.log "Proxy port already in use. Choose another port or release current."
 
             else
                 console.log "Daemon server not started. Some error."
@@ -158,7 +164,7 @@ program
 
 program
 .command 'remove <name>'
-.description 'Add node-srv server'
+.description 'Remove server'
 .action (name)->
     commands.remove name, (err, data)->
         #TODO
