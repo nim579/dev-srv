@@ -7,7 +7,7 @@ class Proxy
     _nodes: {}
 
     constructor: (port, host)->
-        @host = host or 'lc.nim.space'
+        @host = host or 'lchost.ws'
         @port = port or 8080
 
         console.log @port, @host

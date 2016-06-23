@@ -29,11 +29,11 @@ Once *dev-srv* is installed, it will automatically create these folders:
 $ dev-srv start -p 8080 -h lc.nim.space
 ```
 
-This command starts daemon on port (`-p` or `8080` by default). `-h` parameter will useing for servers start (`http://[server_name].lchost.ws/` for host `lc.nim.space`).
+This command starts daemon on port (`-p` or `8080` by default). `-h` parameter will useing for servers start (`http://[server_name].lchost.ws/` for host `lchost.ws`).
 
 Set DNS *A* record for all subdomains in your host. For example:
 ```
-*.lc.nim.space.  A   127.0.0.1
+*.lchost.ws.  A   127.0.0.1
 ```
 
 ## Commands
