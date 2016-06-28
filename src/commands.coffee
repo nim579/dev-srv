@@ -17,8 +17,9 @@ commands =
 
     disconnect: (client=@_client)->
         client?.destroy?()
+        delete @_client
 
-    start:  (port, host, callback)->
+    start: (port, host, autoport, callback)->
         mode = p.extname process.argv[1]
         script = p.resolve __dirname, './daemon'+mode
         initer = process.argv[0]
@@ -28,7 +29,7 @@ commands =
 
         args = [script]
 
-        daemon = cp.spawn initer, [script, port or "", host or ""],
+        daemon = cp.spawn initer, [script, port or "", host or "", autoport or ""],
             detached: true
             cwd: process.cwd()
             stdio: ['ipc', out, err]
@@ -47,11 +48,11 @@ commands =
     stop: (callback)->
         commands._request 'stop', callback
 
-    restart: (port, host, callback)->
+    restart: (port, host, autoport, callback)->
         commands.stop (err)->
             return callback? err if err
 
-            commands.start port, host, (err, data)->
+            commands.start port, host, autoport, (err, data)->
                 callback? err, data
 
     ping: (callback)->
@@ -75,25 +76,26 @@ commands =
     remove: (name, callback)->
         commands._request 'remove', {name: name}, callback
 
-    set: (key, value, callback)->
-
     _request: (method, params, callback)->
         if _.isFunction params
             callback = params
             params = {}
 
-        commands.connect (err, daemon)->
-            return callback err if err
-
-            # console.log method, params
-            daemon.request method, params
+        request = =>
+            @_client.request method, params
             .then (data)->
                 callback? null, data
-                commands.disconnect()
 
             , (data)->
                 callback? data
-                commands.disconnect()
 
+        unless @_client
+            commands.connect (err)->
+                return callback err if err
+
+                request()
+
+        else
+            request()
 
 module.exports = commands

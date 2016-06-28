@@ -12,9 +12,10 @@ class Daemon
     servers: []
     portFamily: 5000
 
-    constructor: (port, host)->
+    constructor: (port, host, autoPortFrom)->
         # Experimental clusterization
         # return @_clusterize() if cluster.isMaster
+        @portFamily = Number(autoPortFrom) if autoPortFrom
 
         @_startProxy port, host, (err)=>
             if err
@@ -125,7 +126,10 @@ class Daemon
         switch method
             # Admin methods
             when 'ping'
-                callback? null, msg: 'pong'
+                callback? null,
+                    port: @_proxy.port
+                    host: @_proxy.host
+                    next_auto_port: @_getPort()
 
             when 'list'
                 callback? null, _.map @servers, (server)=> return @_returnServer server

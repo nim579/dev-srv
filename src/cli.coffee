@@ -29,6 +29,12 @@ errorHandlers = (err)->
             when 'server_name_exists'
                 console.log "Server already exists."
 
+            when 'server_not_found'
+                console.log "Server not found."
+
+            when 'node-srv_not_installed'
+                console.log 'Node-srv module not installed. Install optional module, and retry.'
+
             else
                 console.log "Some error:"
                 console.log err
@@ -46,8 +52,9 @@ program
 .description 'Starts daemon server'
 .option '-p, --port [port]', 'Set daemon server port'
 .option '-h, --host [hostname]', 'Set daemon server domain name'
+.option '-a, --autoport [first_port]', 'Set start port for automatic configuration'
 .action (options)->
-    commands.start options.port, options.host, (err, daemon)->
+    commands.start options.port, options.host, options.autoport, (err, daemon)->
         if err
             if err is "socket_addr_in_use"
                 console.log "Daemon server already started. Stop server or remove .devsrv/daemon.sock file and try again"
@@ -71,6 +78,7 @@ program
 .description 'Stops daemon server'
 .action ->
     commands.stop (err, data)->
+        commands.disconnect()
         console.log "Daemon stoped!"
 
 program
@@ -78,8 +86,11 @@ program
 .description 'Restarts daemon server'
 .option '-p, --port [port]', 'Set server port'
 .option '-h, --host [hostname]', 'Set server domain name'
+.option '-a, --autoport [first_port]', 'Set start port for automatic configuration'
 .action (options)->
-    commands.restart options.port, options.host, (err, data)->
+    commands.restart options.port, options.host, options.autoport, (err, data)->
+        commands.disconnect()
+
         if err
             console.log "Some error"
             console.log err
@@ -92,15 +103,19 @@ program
 .description 'Ping daemon server'
 .action ->
     commands.ping (err, data)->
+        commands.disconnect()
+
         return if errorHandlers(err)
 
-        console.log "Daemon answer: #{JSON.stringify data}"
+        console.log "Daemon started on port #{data.port} and listen host \"#{data.host}\". Next automatic port #{data.next_auto_port}."
 
 program
 .command 'list'
 .description 'List current running servers'
 .action ->
     commands.list (err, data)->
+        commands.disconnect()
+
         return if errorHandlers(err)
 
         tbl = new Table head: ['Name', 'Mode', 'Port', 'Status', 'Identy']
@@ -117,10 +132,11 @@ program
 .description 'Add proxy connection for already running server'
 .action (name, port)->
     commands.proxy name, port, (err, data)->
+        commands.disconnect()
+
         return if errorHandlers(err)
 
-        #TODO
-        console.log data
+        console.log "Proxy \"#{data.name}\" started for port #{data.port}."
 
 program
 .command 'srv <name> <root>'
@@ -129,10 +145,11 @@ program
 .option '-i, --index [filename]', 'Set index file name'
 .action (name, root, options)->
     commands.srv name, root, options.port, options.index, (err, data)->
+        commands.disconnect()
+
         return if errorHandlers(err)
 
-        #TODO
-        console.log data
+        console.log "Server \"#{data.name}\" started on port #{data.port}."
 
 program
 .command 'exec <name> <command>'
@@ -143,10 +160,11 @@ program
     args = getAdditional()
 
     commands.exec name, command, process.cwd(), options.port, args, (err, data)->
+        commands.disconnect()
+
         return if errorHandlers(err)
 
-        #TODO
-        console.log data
+        console.log "Executed server \"#{data.name}\" started on port #{data.port}."
 
 program
 .command 'fork <name> <path>'
@@ -157,17 +175,19 @@ program
     args = getAdditional()
 
     commands.fork name, path, process.cwd(), options.port, args, (err, data)->
+        commands.disconnect()
+
         return if errorHandlers(err)
 
-        #TODO
-        console.log data
+        console.log "Fork server \"#{data.name}\" started on port #{data.port}."
 
 program
 .command 'remove <name>'
 .description 'Remove server'
 .action (name)->
     commands.remove name, (err, data)->
-        #TODO
+        commands.disconnect()
+
         return if errorHandlers(err)
 
         console.log "Server \"#{data.name}\" removed."

@@ -58,3 +58,68 @@ Set DNS *A* record for all subdomains in your host. For example:
     * `-p, --port [port]` — Set custom port
     * `-- [args...]` — Custom args for script
 * `remove <name>` — Remove server
+
+## API
+
+```js
+var DevSrv = require('dev-srv');
+
+DevSrv.ping(function(err, data){
+   console.log(err, data);
+});
+```
+
+### Methods
+* **start(port, host, autoport, callback)**
+* **stop(callback)**
+* **restart(port, host, autoport, callback)**
+* **ping(callback)**
+* **list(callback)**
+* **srv(name, root, port, index, callback)**
+* **proxy(name, port, callback)**
+* **exec(name, command, cwd, port, args, callback)**
+* **fork(name, path, cwd, port, args, callback)**
+* **remove(name, callback)**
+
+All callbacks has *errdata* format.
+
+Methods automatically call **connect()**, if daemon socket not connected. Disconnect will done manually with method **disconnect()** (sync).
+
+You can connect manually, just call method **connect(callback)**.
+
+## Grunt task
+
+```js
+module.exports = function(grunt) {
+    grunt.loadTasks('dev-srv');
+
+    grunt.initConfig({
+        devsrv: {
+            site: {
+                mode: 'srv',
+                name: 'mysite',
+                root: './dist'
+            },
+            tests: {
+                mode: 'exec',
+                name: 'tests.mysite',
+                command: 'npm',
+                args: ['test']
+            }
+        }
+    });
+};
+```
+
+```bash
+grunt devsrv:site
+```
+
+```bash
+grunt devsrv:remove:site    # remove server with name 'site'
+```
+
+Available modes: srv, proxy, exec, fork.
+
+Grunt task just starts servers. You can't start and stop daemon. Server not removing when task done, runt `devsev:remove:{name}` task.
+
