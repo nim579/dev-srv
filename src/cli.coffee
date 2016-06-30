@@ -79,6 +79,12 @@ program
 .action ->
     commands.stop (err, data)->
         commands.disconnect()
+
+        if err
+            console.log "Some error"
+            console.log err
+            return
+
         console.log "Daemon stoped!"
 
 program

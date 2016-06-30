@@ -1,4 +1,5 @@
 _    = require 'underscore'
+fs   = require 'fs'
 net  = require 'net'
 conf = require '../tools/config'
 
@@ -21,6 +22,9 @@ class Server
 
         @_srv.listen conf.DAEMON_PORT, ->
             callback? null
+
+            if _.isNaN Number conf.DAEMON_PORT
+                fs.chmodSync conf.DAEMON_PORT, '666'
 
     _onConnection: (socket)->
         new Socket socket, @messageCallback
